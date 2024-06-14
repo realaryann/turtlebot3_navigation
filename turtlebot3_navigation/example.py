@@ -37,6 +37,12 @@ def print_results(result) -> None:
     elif result == TaskResult.FAILED:
         print('PATH Finding failed')
 
+def send_route(inspection_points, inspection_pose, inspection_route):
+    for pt in inspection_route:
+        inspection_pose.pose.position.x = pt[0]
+        inspection_pose.pose.position.y = pt[1]
+        inspection_points.append(deepcopy(inspection_pose))
+
 def main():
     rclpy.init()
 
@@ -59,10 +65,7 @@ def main():
 
     # Send your route
     inspection_points = set_route(navigator)
-    for pt in inspection_route:
-        inspection_pose.pose.position.x = pt[0]
-        inspection_pose.pose.position.y = pt[1]
-        inspection_points.append(deepcopy(inspection_pose))
+    send_route(inspection_points, inspection_pose, inspection_route)
     nav_start = navigator.get_clock().now()
     navigator.followWaypoints(inspection_points)
 
