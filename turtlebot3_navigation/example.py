@@ -30,12 +30,12 @@ def set_pose(navigator) -> PoseStamped():
 
 def print_results(result) -> None:
     if result == TaskResult.SUCCEEDED:
-        print('Inspection of shelves complete! Returning to start...')
+        print('PATH Finding completed')
     elif result == TaskResult.CANCELED:
-        print('Inspection of shelving was canceled. Returning to start...')
+        print('PATH Finding interrupted')
         exit(1)
     elif result == TaskResult.FAILED:
-        print('Inspection of shelving failed! Returning to start...')
+        print('PATH Finding failed')
 
 def main():
     rclpy.init()
