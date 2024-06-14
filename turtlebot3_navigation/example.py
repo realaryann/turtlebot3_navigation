@@ -9,6 +9,33 @@ import rclpy
 
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 
+def set_route(navigator) -> list:
+    inspection_points = []
+    inspection_pose = PoseStamped()
+    inspection_pose.header.frame_id = 'map'
+    inspection_pose.header.stamp = navigator.get_clock().now().to_msg()
+    inspection_pose.pose.orientation.z = 1.0
+    inspection_pose.pose.orientation.w = 0.0
+    return inspection_points
+
+def set_pose(navigator) -> PoseStamped():
+    initial_pose = PoseStamped()
+    initial_pose.header.frame_id = 'map'
+    initial_pose.header.stamp = navigator.get_clock().now().to_msg()
+    initial_pose.pose.position.x = 0
+    initial_pose.pose.position.y = 0
+    initial_pose.pose.orientation.z = 0.816279
+    initial_pose.pose.orientation.w = 0.577657
+    return initial_pose
+
+def print_results(result) -> None:
+    if result == TaskResult.SUCCEEDED:
+        print('Inspection of shelves complete! Returning to start...')
+    elif result == TaskResult.CANCELED:
+        print('Inspection of shelving was canceled. Returning to start...')
+        exit(1)
+    elif result == TaskResult.FAILED:
+        print('Inspection of shelving failed! Returning to start...')
 
 def main():
     rclpy.init()
@@ -24,25 +51,14 @@ def main():
         [-3.29666, 5.04603]]
 
     # Set your demo's initial pose
-    initial_pose = PoseStamped()
-    initial_pose.header.frame_id = 'map'
-    initial_pose.header.stamp = navigator.get_clock().now().to_msg()
-    initial_pose.pose.position.x = 0
-    initial_pose.pose.position.y = 0
-    initial_pose.pose.orientation.z = 0.816279
-    initial_pose.pose.orientation.w = 0.577657
+    initial_pose = set_pose(navigator)
     navigator.setInitialPose(initial_pose)
 
     # Wait for navigation to activate fully 
     navigator.waitUntilNav2Active()
 
     # Send your route
-    inspection_points = []
-    inspection_pose = PoseStamped()
-    inspection_pose.header.frame_id = 'map'
-    inspection_pose.header.stamp = navigator.get_clock().now().to_msg()
-    inspection_pose.pose.orientation.z = 1.0
-    inspection_pose.pose.orientation.w = 0.0
+    inspection_points = set_route(navigator)
     for pt in inspection_route:
         inspection_pose.pose.position.x = pt[0]
         inspection_pose.pose.position.y = pt[1]
@@ -61,13 +77,7 @@ def main():
                   str(feedback.current_waypoint + 1) + '/' + str(len(inspection_points)))
 
     result = navigator.getResult()
-    if result == TaskResult.SUCCEEDED:
-        print('Inspection of shelves complete! Returning to start...')
-    elif result == TaskResult.CANCELED:
-        print('Inspection of shelving was canceled. Returning to start...')
-        exit(1)
-    elif result == TaskResult.FAILED:
-        print('Inspection of shelving failed! Returning to start...')
+    print_results(result)
 
     # go back to start
     initial_pose.header.stamp = navigator.get_clock().now().to_msg()
